@@ -1,0 +1,43 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: django-app
+  labels:
+    app: django-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      containers:
+        - name: django-app-deployment
+          image: django_app:latest
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: django-config-map
+                  key: database_url
+            - name:  SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: django-config-map
+                  key: secret_key
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: django-config-map
+                  key: debug
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: django-config-map
+                  key: allowed_hosts
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

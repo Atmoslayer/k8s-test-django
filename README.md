@@ -32,3 +32,55 @@ $ docker-compose run web ./manage.py createsuperuser
 `ALLOWED_HOSTS` -- настройка Django со списком разрешённых адресов. Если запрос прилетит на другой адрес, то сайт ответит ошибкой 400. Можно перечислить несколько адресов через запятую, например `127.0.0.1,192.168.0.1,site.test`. [Документация Django](https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts).
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
+
+## Как запустить в minikube
+
+[Minikube](https://minikube.sigs.k8s.io/docs/start/) и [Kubernetes](https://kubernetes.io/docs/setup/) уже должны быть уже установлены. 
+Для работы `minikube` нужна виртуальная машина, при разработке проекта использовалась ВМ [Virtual Box](https://www.virtualbox.org/wiki/Downloads).
+Проверить успешную установку пакетов можно с помощью следующих команд:
+```shell-session
+$ minikube version
+# minikube version: v1.31.2
+$ kubectl version
+# Kustomize Version: v4.5.7
+```
+Если после установки `minikube` имя соответствующей команды остается нераспознанным, необходимо добавить путь к каталогу с установленными
+покетами в [виртуальное окружение ОС](https://remontka.pro/environment-variables-windows/).  
+Создайте minikube кластер с помощью команды:
+```shell-session
+$ minikube start
+```
+Данную команду следует использовать после каждого перезапуска ОС.
+Далее следует добавить собранный докер-образ проекта внутрь кластера. Для этого используйте: 
+```shell-session
+$ minikube image load django_app
+```
+Проверьте успешность загрузки образа с помощью команды:
+```shell-session
+$ minikube image ls
+```
+В выведенном списке обязательно должен быть добавленный образ:
+```shell-session
+...
+docker.io/library/django_app:latest
+...
+```
+Далее необходимо отредактировать файл `config-map.yml`, задав в нем ваши переменные окружения.
+Конфигурация применяется следующей командой:
+```shell-session
+$ kubectl apply -f config-map.yml  
+```
+Проект можно развернуть в виде `pod` или полноценный `deployment`. 
+Для запуска `pod`-версии используйте:
+```shell-session
+$ kubectl apply -f django-app-pod.yml  
+```
+Для запуска `deployment`-версии используйте:
+```shell-session
+$ kubectl apply -f django-app-deployment.yml  
+```
+За ходом и результатом выполнения команд создания элементов кластера можно следить с помощью команды, которую необходимо
+запустить в отдельном терминале:
+```shell-session
+$ minikube dashboard
+```
