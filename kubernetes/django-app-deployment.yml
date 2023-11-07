@@ -41,3 +41,4 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 80
+              protocol: TCP
