@@ -31,4 +31,4 @@ spec:
               key: allowed_hosts
       imagePullPolicy: Never
       ports:
-        - containerPort: 8080
+        - containerPort: 80
