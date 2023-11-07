@@ -1,9 +1,11 @@
-kind: ConfigMap
 apiVersion: v1
+kind: ConfigMap
 metadata:
   name: django-config-map
+  labels:
+    env: prod
 data:
-  debug: "False"
-  secret_key: "1234"
-  database_url: "postgres://test_k8s:OwOtBep9Frut@192.168.208.199:5432/test_k8s"
-  allowed_hosts: "*"
+  DEBUG: "False"
+  SECRET_KEY: "1234"
+  DATABASE_URL: "postgres://test_k8s:OwOtBep9Frut@192.168.243.199:5432/test_k8s"
+  ALLOWED_HOSTS: "star-burger.test"
