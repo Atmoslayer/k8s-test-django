@@ -33,7 +33,7 @@ $ docker-compose run web ./manage.py createsuperuser
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
 
-## Как запустить в minikube
+## Как запустить в Minikube
 
 [Minikube](https://minikube.sigs.k8s.io/docs/start/) и [Kubernetes](https://kubernetes.io/docs/setup/) уже должны быть уже установлены. 
 Для работы `minikube` нужна виртуальная машина, при разработке проекта использовалась ВМ [Virtual Box](https://www.virtualbox.org/wiki/Downloads).
@@ -46,12 +46,24 @@ $ kubectl version
 ```
 Если после установки `minikube` имя соответствующей команды остается нераспознанным, необходимо добавить путь к каталогу с установленными
 покетами в [виртуальное окружение ОС](https://remontka.pro/environment-variables-windows/).  
-Создайте minikube кластер с помощью команды:
+Создайте `minikube` кластер. По умолчанию под создание виртуальной машины резервируется **20 гигабайт места на диске**. 
+Рекомендуется явно указать желаемый размер диска виртуальной машины с помощью соответствующего флага. В рамках данного
+проекта использовалось 10 гигабайт. Команда для запуска `minikube` в таком случае выглядит так:
 ```shell-session
-$ minikube start
+$ minikube start --disk-size=10gb
 ```
-Данную команду следует использовать после каждого перезапуска ОС.
-Далее следует добавить собранный докер-образ проекта внутрь кластера. Для этого используйте: 
+Если после вызова команды возникает ошибка наподобие этой:
+```
+This computer doesn't have VT-X/AMD-v enabled. Enabling it in the BIOS is mandatory
+```
+Используйте команду с флагом явного указания использования VirtualBox:
+```shell-session
+$ minikube start --driver=virtualbox --no-vtx-check --disk-size=10gb
+```
+Обратите внимание, что докер-образ уже должен быть
+собран. Например, с помощью `docker-compose` команд [данного пункта](#как-запустить-dev-версию).
+Далее следует добавить докер-образ проекта внутрь кластера.  
+Для этого используйте: 
 ```shell-session
 $ minikube image load django_app
 ```
@@ -65,26 +77,51 @@ $ minikube image ls
 docker.io/library/django_app:latest
 ...
 ```
-Далее необходимо отредактировать файл `config-map.yml`, задав в нем ваши переменные окружения.
+Включите дополнение `minikube ingress` с помощью следующей команды:
+```shell-session
+$ minikube addons enable ingress
+```
+Далее необходимо отредактировать файл `config-map.yml`, задав в нем ваши [переменные окружения](#переменные-окружения).
 Конфигурация применяется следующей командой:
 ```shell-session
 $ kubectl apply -f config-map.yml  
 ```
-Проект можно развернуть в виде `pod` или полноценный `deployment`. 
-Для запуска `pod`-версии используйте:
+Для запуска проекта используйте:
 ```shell-session
-$ kubectl apply -f django-app-pod.yml  
+$ kubectl apply -f django-app-setup.yml  
 ```
-Для запуска `deployment`-версии используйте:
-```shell-session
-$ kubectl apply -f django-app-deployment.yml  
-```
-Для работы с `deployment` версией без проброса портов необходимо создать `service`. Это можно сделать следующей командой:
-```shell-session
-$ kubectl apply -f django-app-service.yml  
-```
-За ходом и результатом выполнения команд создания элементов кластера можно следить с помощью команды, которую необходимо
+Успешность создания и статус работы элементов кластера можно узнать с помощью команды, которую необходимо
 запустить в отдельном терминале:
 ```shell-session
 $ minikube dashboard
 ```
+Отдельно стоит убедиться в успешном запуске `ingress`. Для этого используйте команду:
+```shell-session
+$ kubectl get ingress
+``` 
+Убедитесь, что `ingress` обладает адресом. Если его нет, попробуйте перезапустить команду:
+```
+NAME             CLASS   HOSTS              ADDRESS          PORTS   AGE
+django-ingress   nginx   star-burger.test   192.168.59.103   80      59m
+```
+После запуска проекта получите ip адрес виртуальной машины с помощью команды:
+```shell-session
+$ minikube ip
+```
+Убедитесь, что полученный адрес совпадает с адресом `ingress`, о котором речь шла в прошлом шаге.
+Отредактируйте файл `hosts`. Путь к нему зависит от операционной системы:
+- Windows XP, 2003, Vista, 7, 8, 10, 11 — С:\windows\system32\drivers\etc\hosts
+- Linux, Ubuntu, Unix, BSD — /etc/hosts
+- macOS — /private/etc/hosts
+Добавьте в конец файла строку, содержащую полученный адрес:
+```
+<minikube ip> star-burger.test
+```
+После этого сайт будет доступен по адресу: http://star-burger.test.
+При внесении изменений в `config-map.yml` используйте следующие команды:
+```shell-session
+$ kubectl apply -f config-map.yml  
+$ kubectl delete pods -l project=django-app  
+```
+## Цели проекта
+Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org).
