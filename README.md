@@ -79,6 +79,10 @@ $ kubectl apply -f django-app-pod.yml
 ```shell-session
 $ kubectl apply -f django-app-deployment.yml  
 ```
+Для работы с `deployment` версией без проброса портов необходимо создать `service`. Это можно сделать следующей командой:
+```shell-session
+$ kubectl apply -f django-app-service.yml  
+```
 За ходом и результатом выполнения команд создания элементов кластера можно следить с помощью команды, которую необходимо
 запустить в отдельном терминале:
 ```shell-session
