@@ -123,6 +123,10 @@ $ minikube ip
 $ kubectl apply -f config-map.yml  
 $ kubectl delete pods -l project=django-app  
 ```
+Для применения миграций используйте:
+```shell-session
+$ kubectl apply -f migrations-job.yml
+```
 Проект позволяет настроить регулярное удаление сессий. Для этого нужно создать `CronJob`:
 ```shell-session
 $ kubectl create -f clearsessions-cronjob.yml
@@ -135,6 +139,5 @@ $ kubectl create job --from=cronjob/django-clearsessions-cronjob clearsessios-jo
 ```shell-session
 $ kubectl delete job clearsessios-job
 ```
-Затем созданные 
 ## Цели проекта
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org).
