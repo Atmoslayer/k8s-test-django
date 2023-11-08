@@ -8,6 +8,7 @@ spec:
   schedule: "0 0 1 * *"
   jobTemplate:
     spec:
+      startingDeadlineSeconds: 15
       ttlSecondsAfterFinished: 100
       template:
         spec:
