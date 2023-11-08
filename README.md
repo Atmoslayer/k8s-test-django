@@ -34,7 +34,7 @@ $ docker-compose run web ./manage.py createsuperuser
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
 
 ## Как запустить в Minikube
-
+### Запуск проекта
 [Minikube](https://minikube.sigs.k8s.io/docs/start/) и [Kubernetes](https://kubernetes.io/docs/setup/) уже должны быть уже установлены. 
 Для работы `minikube` нужна виртуальная машина, при разработке проекта использовалась ВМ [Virtual Box](https://www.virtualbox.org/wiki/Downloads).
 Проверить успешную установку пакетов можно с помощью следующих команд:
@@ -81,6 +81,10 @@ docker.io/library/django_app:latest
 ```shell-session
 $ minikube addons enable ingress
 ```
+Перейдите в каталог с манифестами:
+```shell-session
+$ сd kubernetes
+```
 Далее необходимо отредактировать файл `config-map.yml`, задав в нем ваши [переменные окружения](#переменные-окружения).
 Конфигурация применяется следующей командой:
 ```shell-session
@@ -123,10 +127,34 @@ $ minikube ip
 $ kubectl apply -f config-map.yml  
 $ kubectl delete pods -l project=django-app  
 ```
+### Запуск базы данных
+Установите [Helm](https://helm.sh/docs/intro/install/) аналогично установке `minikube` и `k8s`.
+Проверить успешность установки можно командой:
+```shell-session
+$ helm version
+version.BuildInfo{Version:"v3.13.1", GitCommit:"3547a4b5bf5edb5478ce352e18858d8a552a4110", GitTreeState:"clean", GoVersion:"go1.20.8"}
+```
+Установите PostgreSQL c помощью следующих команд:
+```shell-session
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+$ helm install postgresql bitnami/postgresql
+```
+Подключитесь к базе данных используя команду, которую подсказывает выведенная инструкция:
+```shell-session
+$  kubectl run postgresqll-client --rm --tty -i --restart='Never' --namespace default --image docker.io/bitnami/postgresql:16.0.0-debian-11-r15 --env="PGPASSWORD=OwOtBep9Frut" \ 
+--command -- psql --host postgresql -U test_k8s -d test_k8s -p 5432
+```
+Создайте пользователя и таблицу:
+```shell-session
+CREATE DATABASE test_k8s;
+CREATE USER test_k8s WITH ENCRYPTED PASSWORD 'OwOtBep9Frut';
+GRANT ALL PRIVILEGES ON DATABASE test_k8s TO test_k8s;
+```
 Для применения миграций используйте:
 ```shell-session
 $ kubectl apply -f migrations-job.yml
 ```
+### Удаление сессий
 Проект позволяет настроить регулярное удаление сессий. Для этого нужно создать `CronJob`:
 ```shell-session
 $ kubectl create -f clearsessions-cronjob.yml
