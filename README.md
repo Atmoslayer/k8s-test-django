@@ -4,6 +4,11 @@
 
 Внутри конейнера Django запускается с помощью Nginx Unit, не путать с Nginx. Сервер Nginx Unit выполняет сразу две функции: как веб-сервер он раздаёт файлы статики и медиа, а в роли сервера-приложений он запускает Python и Django. Таким образом Nginx Unit заменяет собой связку из двух сервисов Nginx и Gunicorn/uWSGI. [Подробнее про Nginx Unit](https://unit.nginx.org/).
 
+## Пример проекта, развернутый в полноценном кластере Яндекс Облака
+
+Тестовый сайт доступен по [данному адресу](https://edu-evil-panini.sirius-k8s.dvmn.org/).
+[Использованные ресурсы](https://sirius-env-registry.website.yandexcloud.net/edu-evil-panini.html).
+
 ## Как запустить dev-версию
 
 Запустите базу данных и сайт:
@@ -192,6 +197,10 @@ $ kubectl apply -f config-map-prod.yml
 Для запуска проекта используйте:
 ```shell-session
 $ kubectl apply -f django-app-prod-setup.yml  
+```
+Для применения миграций используйте:
+```shell-session
+$ kubectl apply -f migrations-job.yml
 ```
 ## Цели проекта
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org).
