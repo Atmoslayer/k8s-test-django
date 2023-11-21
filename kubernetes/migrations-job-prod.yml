@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-job
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 200
+  template:
+    spec:
+      containers:
+        - name: django-migrations
+          image: atmoslayer/django_app:latest
+          command: [ "python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: django-config-map-prod
+      restartPolicy: Never
